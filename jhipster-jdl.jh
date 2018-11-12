@@ -69,18 +69,18 @@ enum TipoDeudor {
 }
 
 relationship ManyToOne{
-	OperacionDeudor{operacion required} to Operacion
-	OperacionDeudor{deudor required} to Deudor
-	Operacion{moneda required} to Moneda
-    Operacion{producto required} to Producto
-    Operacion{fase} to Fase
-    Operacion{estado} to Estado 
+	OperacionDeudor{operacion required} to Operacion,
+	OperacionDeudor{deudor required} to Deudor,
+	Operacion{moneda required} to Moneda,
+    Operacion{producto required} to Producto,
+    Operacion{fase} to Fase,
+    Operacion{estado} to Estado ,
     DetalleOperacion{operacion required} to Operacion
 }
 
 relationship ManyToOne {
-	Pago{deudor} to Deudor{rut}
-    Pago{operacion} to Operacion{numOperacion}
+	Pago{deudor} to Deudor{rut},
+    Pago{operacion} to Operacion{numOperacion},
     Pago{moneda} to Moneda
 }
 
@@ -167,9 +167,9 @@ entity Gestion {
 }
 
 relationship ManyToOne {
-    Gestion{deudor} to Deudor{required}
-    Gestion{moneda} to Moneda{required}
-    Gestion{estado} to Estado{required}
+    Gestion{deudor} to Deudor{required},
+    Gestion{moneda} to Moneda{required},
+    Gestion{estado} to Estado{required},
     Gestion{empresaExterna} to EmpresaExterna
 }
 
@@ -182,8 +182,8 @@ relationship ManyToOne {
 }
 
 relationship ManyToMany {
-	Estrategia to Accion
-	Accion to Contacto
+	Estrategia to Accion,
+	Accion to Contacto,
     Contacto to Respuesta
 }
 
@@ -218,12 +218,12 @@ relationship OneToOne {
 }
 
 relationship OneToMany{
-    Empresa{zonaGeografica} to ZonaGeografica
+    Empresa{zonaGeografica} to ZonaGeografica,
     ZonaGeografica{nivel} to NivelZonaGeografica
 }
 
 relationship ManyToOne {
-    NivelZonaGeografica{nivelPadre} to NivelZonaGeografica
+    NivelZonaGeografica{nivelPadre} to NivelZonaGeografica,
     ZonaGeografica{zonaPadre} to ZonaGeografica
 }
 
