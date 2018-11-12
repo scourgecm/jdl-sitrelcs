@@ -1,0 +1,151 @@
+// Deuda
+entity Deudor {
+	rut Integer,
+    dv String,
+	nombre String,
+    fechaIngreso Instant
+}
+
+entity Operacion {
+	numOperacion String required,
+    montoOperacion Float,
+    montoMora Float,
+    saldoInsoluto Float,
+    fechaVencimiento Instant,
+    diasMora Integer,
+    fechaIngreso Instant required,
+    numCuotas Integer,
+    diasMoraCalc Integer
+}
+
+entity OperacionDeudor {
+	tipoDeudor TipoDeudor required
+}
+
+entity DetalleOperacion{
+	fechaVencimiento Instant,
+    diasMora Integer,
+    fechaIngreso Instant,
+    numero Integer,
+    montoDetalle Float,
+    diasMoraCal Integer
+}
+
+entity Producto {
+	codigo String,
+    nombre String
+}
+
+entity Moneda {
+	nombre String,
+    signo String
+}
+
+entity Fase {
+	nombre String,
+    indfaseJudicial Boolean
+}
+
+entity Estado {
+	nombre String,
+    codigo String,
+    indRuteoManual Boolean,
+    indInhibeGestion Boolean,
+    indPermiteDiscador Boolean
+}
+
+entity Pago {
+	fechaPago Instant required,
+    montoPago Float required,
+    fechaIngreso Instant required,
+    montoHonorario Float,
+    montoInteres Float,
+    numDocumento String,
+    numCuota Integer
+}
+
+enum TipoDeudor {
+	DIRECTO, AVAL
+}
+
+relationship ManyToOne{
+	OperacionDeudor{operacion required} to Operacion
+	OperacionDeudor{deudor required} to Deudor
+	Operacion{moneda required} to Moneda
+    Operacion{producto required} to Producto
+    Operacion{fase} to Fase
+    Operacion{estado} to Estado 
+}
+
+relationship OneToMany{
+	Operacion to DetalleOperacion{operacion required}
+}
+
+relationship ManyToOne {
+	Pago{deudor} to Deudor{rut}
+    Pago{operacion} to Operacion{numOperacion}
+    Pago{moneda} to Moneda
+}
+
+// Estrategias Cobranza
+entity Estrategia {
+	codigo String,
+    nombre String,
+    tipo TipoEstrategia,
+    duracion Integer,
+    tipoOrigen String,
+    meta Float,
+    ordenEjecucion Integer,
+    indEjecucion Boolean,
+    indPreasignacion Boolean,
+    indApoyo Boolean,
+    descuento Float,
+    indArrastre Boolean,
+    indReevaluacion Boolean,
+    indAutomatica Boolean
+}
+
+entity Campana {
+	fechaInicio Instant,
+    fechaTermino Instant,
+    numDeudoresIni Integer,
+    numDeudoresActual Integer,
+    numOperacionesIni Integer,
+    numOperacionesActual Integer,
+    porcDescuento Float
+}
+
+entity Accion {
+	nombre String,
+    montoCosto Float,
+    indTelefono Boolean
+}
+
+entity Contacto {
+	nombre String,
+    indGeneraCompromiso Boolean
+}
+
+entity Respuesta{
+	nombre String,
+    indCompromisoPago Boolean,
+    indCompromisoFecha Boolean
+}
+
+enum TipoEstrategia {
+	PERMANENTE, COMPARTIDA
+}
+
+relationship OneToOne {
+	Campana{estrategia} to Estrategia
+}
+
+relationship ManyToOne {
+	Accion{moneda} to Moneda
+}
+
+relationship ManyToMany {
+	Estrategia to Accion
+	Accion to Contacto
+    Contacto to Respuesta
+}
