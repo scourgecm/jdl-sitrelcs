@@ -75,10 +75,7 @@ relationship ManyToOne{
     Operacion{producto required} to Producto
     Operacion{fase} to Fase
     Operacion{estado} to Estado 
-}
-
-relationship OneToMany{
-	Operacion to DetalleOperacion{operacion required}
+    DetalleOperacion{operacion required} to Operacion
 }
 
 relationship ManyToOne {
@@ -103,6 +100,10 @@ entity Estrategia {
     indArrastre Boolean,
     indReevaluacion Boolean,
     indAutomatica Boolean
+}
+
+enum TipoEstrategia {
+	PERMANENTE, COMPARTIDA
 }
 
 entity Campana {
@@ -133,11 +134,11 @@ entity Respuesta {
 }
 
 entity Gestion {
-    fechaHoraGestion Instant,
     idOperacion String, // Referencia post-eliminación Operacion
     idCampana String, // Referencia post-eliminación Campana
     idUsuario String, // Referencia post-eliminación User
     cobrador String, // Referencia post-eliminación User
+    fechaHoraGestion Instant,
     glosa String,
     nombreContacto String,
     programacionLlamada Instant,
@@ -172,10 +173,6 @@ relationship ManyToOne {
     Gestion{empresaExterna} to EmpresaExterna
 }
 
-enum TipoEstrategia {
-	PERMANENTE, COMPARTIDA
-}
-
 relationship OneToOne {
 	Campana{estrategia} to Estrategia
 }
@@ -202,7 +199,7 @@ entity Empresa {
     nombreRepresentanteLegal String
 }
 
-entity EmpresaExterna
+entity EmpresaExterna {}
 
 entity ZonaGeografica {
     nombre String,
@@ -217,7 +214,7 @@ entity NivelZonaGeografica {
 }
 
 relationship OneToOne {
-    EmpresaExterna to Empresa
+    EmpresaExterna{empresa} to Empresa
 }
 
 relationship OneToMany{
