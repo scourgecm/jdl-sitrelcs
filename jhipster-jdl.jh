@@ -126,10 +126,50 @@ entity Contacto {
     indGeneraCompromiso Boolean
 }
 
-entity Respuesta{
+entity Respuesta {
 	nombre String,
     indCompromisoPago Boolean,
     indCompromisoFecha Boolean
+}
+
+entity Gestion {
+    fechaHoraGestion Instant,
+    idOperacion String, // Referencia post-eliminación Operacion
+    idCampana String, // Referencia post-eliminación Campana
+    idUsuario String, // Referencia post-eliminación User
+    cobrador String, // Referencia post-eliminación User
+    glosa String,
+    nombreContacto String,
+    programacionLlamada Instant,
+    montoCompromiso Float,
+    fechaCompromiso Instant,
+    idProducto String, // Referencia post-eliminación Producto
+    producto String, // Referencia post-eliminación Producto
+    idAccion String, // Referencia post-eliminación Accion, Contacto, Respuesta
+    accion String,
+    idContacto String,
+    contacto String,
+    idRespuesta String,  
+    respuesta String,
+    montoCosto Float,
+    codigoCarta String,
+    nombreCarta String,
+    numOperacion String, // Referencia post-eliminación Operacion
+    duracion Integer,
+    montoMoraGestion Float,
+    codigoEstrategia String, // Referencia post-eliminación Estrategia
+    nombreEstrategia String // Referencia post-eliminación Estrategia
+    fechaInicio Instant,
+    fechaTermino Instant,
+    numTelefono String,
+    fechaIngresoGestion Instant
+}
+
+relationship ManyToOne {
+    Gestion{deudor} to Deudor{required}
+    Gestion{moneda} to Moneda{required}
+    Gestion{estado} to Estado{required}
+    Gestion{empresaExterna} to EmpresaExterna
 }
 
 enum TipoEstrategia {
@@ -148,4 +188,44 @@ relationship ManyToMany {
 	Estrategia to Accion
 	Accion to Contacto
     Contacto to Respuesta
+}
+
+
+// Mantenedores
+
+entity Empresa {
+    codigo String,
+    nombre String,
+    direccion String,
+    numTelefono String,
+    numAnexo String,
+    nombreRepresentanteLegal String
+}
+
+entity EmpresaExterna
+
+entity ZonaGeografica {
+    nombre String,
+    codigoArea String
+}
+
+entity NivelZonaGeografica {
+    codigo String,
+    nombre String,
+    correlativo Integer,
+    indCodigoArea Boolean
+}
+
+relationship OneToOne {
+    EmpresaExterna to Empresa
+}
+
+relationship OneToMany{
+    Empresa{zonaGeografica} to ZonaGeografica
+    ZonaGeografica{nivel} to NivelZonaGeografica
+}
+
+relationship ManyToOne {
+    NivelZonaGeografica{nivelPadre} to NivelZonaGeografica
+    ZonaGeografica{zonaPadre} to ZonaGeografica
 }
