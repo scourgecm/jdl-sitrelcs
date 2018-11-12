@@ -226,3 +226,6 @@ relationship ManyToOne {
     NivelZonaGeografica{nivelPadre} to NivelZonaGeografica
     ZonaGeografica{zonaPadre} to ZonaGeografica
 }
+
+
+skipClient *
