@@ -218,6 +218,9 @@ entity Campana {
 	numOperacionesActual Integer,
 	porcDescuento Float
 }
+
+
+
 entity Accion {
 	nombre String,
 	montoCosto Float,
