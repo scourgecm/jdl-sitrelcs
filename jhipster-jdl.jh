@@ -428,4 +428,26 @@ relationship ManyToOne {
 	Telefono to OrigenCarga
 }
 
+/**
+ * The Email entity
+ * Representa un email asociado siempre a un deudor
+ * @author Patricio Cornejo
+ */
+entity Email {
+	/** Direccion de correo completa */
+	direccion String,
+	/** Fecha de ingreso al sistema */
+	fechaIngreso Instant
+}
+
+relationship ManyToOne{
+	Email to Deudor,
+	Email to EmpresaCedente,
+	Email to OrigenCarga
+}
+
+dto * with mapstruct
+service * with serviceClass
+paginate * with pagination
+
 skipClient *
