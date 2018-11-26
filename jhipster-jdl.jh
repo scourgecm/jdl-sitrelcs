@@ -1,231 +1,431 @@
 // Deuda
+/**
+ * The Deudor entity.
+ * @author Patricio Cornejo
+ */
 entity Deudor {
-	rut Integer,
-    dv String,
+	/** rut */
+	rut Integer required,
+	/** Dígito verificador */
+	dv String required,
+	/** Nombre completo */
 	nombre String,
-    fechaIngreso Instant
+	/** Fecha de ingreso al sistema */
+	fechaIngreso Instant required
 }
 
+/**
+ * The Operacion entity.
+ * @author Patricio Cornejo
+ */
 entity Operacion {
+	/** Número identificador de la operación */
 	numOperacion String required,
-    montoOperacion Float,
-    montoMora Float,
-    saldoInsoluto Float,
-    fechaVencimiento Instant,
-    diasMora Integer,
-    fechaIngreso Instant required,
-    numCuotas Integer,
-    diasMoraCalc Integer
-}
-
-entity OperacionDeudor {
-	tipoDeudor TipoDeudor required
-}
-
-entity DetalleOperacion{
+	/** Monto total de la operación */
+	montoOperacion Float,
+	/** Monto adeudado (genralmente suma de detalle) */
+	montoMora Float,
+	/** Saldo por cobrar (?) */
+	saldoInsoluto Float,
+	/** Fecha de vencimiento de la cuota más antigua morosa (o lo informado por el cedente) */
 	fechaVencimiento Instant,
-    diasMora Integer,
-    fechaIngreso Instant,
-    numero Integer,
-    montoDetalle Float,
-    diasMoraCal Integer
+	/** Días en mora de la operación (informados por el cedente) */
+	diasMora Integer,
+	/** Cantidad de cuotas total de la operación (pueden ser más que las que se encuentran en el sistema) */
+	numCuotas Integer,
+	/** Fecha de ingreso al sistema */
+	fechaIngreso Instant required,
+	/** Días en mora de la operación (calculados en base a fechaVencimiento) */
+	diasMoraCalc Integer
 }
 
+/**
+ * The DetalleOperacion entity.
+ * Representa una subdivisión de la operación (generalmente cuotas)
+ * @author Patricio Cornejo
+ */
+entity DetalleOperacion{
+	/** Fecha de vencimiento informada */
+	fechaVencimiento Instant,
+	/** Días de mora (informados por el cedente) */
+	diasMora Integer,
+	/** Número del detalle */
+	numero Integer,
+	/** Monto del detalle */
+	montoDetalle Float,
+	/** Fecha de ingreso al sistema */
+	fechaIngreso Instant required,
+	/** Días de mora (calculados en base a fechaVencimiento) */
+	diasMoraCal Integer
+}
+
+/**
+ * The Producto entity.
+ * Producto asociado a las operaciones
+ * @author Patricio Cornejo
+ */
 entity Producto {
+	/** Código corto del producto */
 	codigo String,
-    nombre String
+	/** Nombre completo del producto */
+	nombre String required
 }
 
+/**
+ * The Moneda entity.
+ * Divisas utilizadas por varias entidades en el sistema.
+ * Para la mayoría de cliente se contempla Peso Chileno, Dolar y Unidad de Fomento
+ * @author Patricio Cornejo
+ */
 entity Moneda {
+	/** Nombre completo de la moneda */
 	nombre String,
-    signo String
+	/** Codigo ISO de la moneda, si aplica (ej: CLP, USD) */
+	codigoISO String,
+	/** Símbolo de la moneda (ej: $, U.F.) */
+	signo String
 }
 
+/**
+ * The Fase entity.
+ * Fase de cobranza de la operación.
+ * @author Patricio Cornejo
+ */
 entity Fase {
+	/** Nombre de fase */
 	nombre String,
-    indfaseJudicial Boolean
+	/** Indica si corresponde a fase de cobranza judicial */
+	indFaseJudicial Boolean
 }
 
 entity Estado {
 	nombre String,
-    codigo String,
-    indRuteoManual Boolean,
-    indInhibeGestion Boolean,
-    indPermiteDiscador Boolean
+	codigo String,
+	indRuteoManual Boolean,
+	indInhibeGestion Boolean,
+	indPermiteDiscador Boolean
 }
 
+/**
+ * The Pago entity.
+ * Pago ingresado asociado a una operación
+ * @author Patricio Cornejo
+ */
 entity Pago {
+	/** Fecha de digitación del pago (informada por cedente) */
 	fechaPago Instant required,
-    montoPago Float required,
-    fechaIngreso Instant required,
-    montoHonorario Float,
-    montoInteres Float,
-    numDocumento String,
-    numCuota Integer
+	/** Monto total pagado, relativo a la moneda */
+	montoPago Float required,
+	/** Fecha de ingreso del pago al sistema */
+	fechaIngreso Instant required,
+	/** Porción del monto que corresponde a honorarios */
+	montoHonorario Float,
+	/** Porción del monto que corresponde a intereses */
+	montoInteres Float,
+	/** Número de documento asociado al pago */
+	numDocumento String,
+	/** Cuota asociada al pago */
+	numCuota Integer
 }
 
-enum TipoDeudor {
-	DIRECTO, AVAL
-}
+/**
+ * The OperacionDeudor entity.
+ * Relaciona operaciones y deudores. 
+ * Una operación puede estar relacionada a más de un deudor.
+ * Un deudor puede tener varias operaciones a la vez y estar relacionado a la misma con distintos tipos de deudor.
+ * @author Patricio Cornejo
+ */
+entity OperacionDeudor {}
 
+/**
+ * The TipoDeudor entity.
+ * Representa el tipo de relación establecida entre una operación y un deudor
+ * Ej: Deudor Directo, Aval
+ * @author Patricio Cornejo
+ */
+entity TipoDeudor {}
+
+// Relaciones de entidad Operacion y detalle
 relationship ManyToOne{
-	OperacionDeudor{operacion required} to Operacion,
-	OperacionDeudor{deudor required} to Deudor,
-	Operacion{moneda required} to Moneda,
-    Operacion{producto required} to Producto,
-    Operacion{fase} to Fase,
-    Operacion{estado} to Estado ,
-    DetalleOperacion{operacion required} to Operacion
+	OperacionDeudor{operacion required} to Operacion , 
+	OperacionDeudor{deudor required} to Deudor , 
+	OperacionDeudor{tipoDeudor required} to TipoDeudor , 
+	Operacion{moneda required} to Moneda , 
+	Operacion{producto required} to Producto , 
+	Operacion{fase} to Fase , 
+	Operacion{estado} to Estado , 
+	DetalleOperacion{operacion required} to Operacion
 }
 
+// Relaciones de entidad Pago
 relationship ManyToOne {
-	Pago{deudor} to Deudor{rut},
-    Pago{operacion} to Operacion{numOperacion},
-    Pago{moneda} to Moneda
+	Pago{deudor} to Deudor{rut} , Pago{operacion} to Operacion{numOperacion} , Pago{moneda} to Moneda
 }
 
 // Estrategias Cobranza
-entity Estrategia {
-	codigo String,
-    nombre String,
-    tipo TipoEstrategia,
-    duracion Integer,
-    tipoOrigen String,
-    meta Float,
-    ordenEjecucion Integer,
-    indEjecucion Boolean,
-    indPreasignacion Boolean,
-    indApoyo Boolean,
-    descuento Float,
-    indArrastre Boolean,
-    indReevaluacion Boolean,
-    indAutomatica Boolean
-}
 
+/**
+ * The Estrategia entity.
+ * Definiciones de estrategias de cobranza 
+ * @author Patricio Cornejo
+ */
+entity Estrategia {
+	/** Código corto para la estrategia */
+	codigo String,
+	/** Nombre de la estrategia */
+	nombre String,
+	/** Define si es permanente o compartida */
+	tipo TipoEstrategia,
+	/** Duración de la estrategia en día */
+	duracion Integer,
+	/** Indica origen de la ejecución de la estrategia (ARCHIVO o FILTRO) */
+	tipoOrigen TipoOrigenEstrategia,
+	/** Porcentaje meta a gestionar */
+	meta Float,
+	ordenEjecucion Integer,
+	indEjecucion Boolean,
+	indPreasignacion Boolean,
+	indApoyo Boolean,
+	descuento Float,
+	indArrastre Boolean,
+	indReevaluacion Boolean,
+	indAutomatica Boolean
+}
 enum TipoEstrategia {
 	PERMANENTE, COMPARTIDA
 }
-
-entity Campana {
-	fechaInicio Instant,
-    fechaTermino Instant,
-    numDeudoresIni Integer,
-    numDeudoresActual Integer,
-    numOperacionesIni Integer,
-    numOperacionesActual Integer,
-    porcDescuento Float
+enum TipoOrigenEstrategia {
+	ARCHIVO, FILTRO
 }
 
+/**
+ * The Campana entity.
+ * Representa la ejecución de una estrategia de cobranza
+ * @author Patricio Cornejo
+ */
+entity Campana {
+	/** Vinculada a la fecha de ejecución de la estrategia de origen */
+	fechaInicio Instant,
+	/** Fecha de termino calculada por la duración de la estrategia */
+	fechaTermino Instant,
+	/** Cantidad total de deudores únicos incluídos durante la ejecución */
+	numDeudoresIni Integer,
+	/** Cantidad total de deudores actual en la campaña */
+	numDeudoresActual Integer,
+	/** Cantidad de operaciones incluídas durante la ejecución*/
+	numOperacionesIni Integer,
+	/** Cantidad de operaciones actual en la campaña*/
+	numOperacionesActual Integer,
+	porcDescuento Float
+}
 entity Accion {
 	nombre String,
-    montoCosto Float,
-    indTelefono Boolean
+	montoCosto Float,
+	indTelefono Boolean
 }
-
 entity Contacto {
 	nombre String,
-    indGeneraCompromiso Boolean
+	indGeneraCompromiso Boolean
 }
-
 entity Respuesta {
 	nombre String,
-    indCompromisoPago Boolean,
-    indCompromisoFecha Boolean
+	indCompromisoPago Boolean,
+	indCompromisoFecha Boolean
 }
-
 entity Gestion {
-    idOperacion String, // Referencia post-eliminación Operacion
-    idCampana String, // Referencia post-eliminación Campana
-    idUsuario String, // Referencia post-eliminación User
-    cobrador String, // Referencia post-eliminación User
-    fechaHoraGestion Instant,
-    glosa String,
-    nombreContacto String,
-    programacionLlamada Instant,
-    montoCompromiso Float,
-    fechaCompromiso Instant,
-    idProducto String, // Referencia post-eliminación Producto
-    producto String, // Referencia post-eliminación Producto
-    idAccion String, // Referencia post-eliminación Accion, Contacto, Respuesta
-    accion String,
-    idContacto String,
-    contacto String,
-    idRespuesta String,  
-    respuesta String,
-    montoCosto Float,
-    codigoCarta String,
-    nombreCarta String,
-    numOperacion String, // Referencia post-eliminación Operacion
-    duracion Integer,
-    montoMoraGestion Float,
-    codigoEstrategia String, // Referencia post-eliminación Estrategia
-    nombreEstrategia String // Referencia post-eliminación Estrategia
+	idOperacion String, // Referencia post-eliminación Operacion
+	idCampana String, // Referencia post-eliminación Campana
+	idUsuario String, // Referencia post-eliminación User
+	cobrador String, // Referencia post-eliminación User
+	fechaHoraGestion Instant,
+	glosa String,
+	nombreContacto String,
+	programacionLlamada Instant,
+	montoCompromiso Float,
+	fechaCompromiso Instant,
+	idProducto String, // Referencia post-eliminación Producto
+	producto String, // Referencia post-eliminación Producto
+	idAccion String, // Referencia post-eliminación Accion, Contacto, Respuesta
+	accion String,
+	idContacto String,
+	contacto String,
+	idRespuesta String,
+	respuesta String,
+	montoCosto Float,
+	codigoCarta String,
+	nombreCarta String,
+	numOperacion String, // Referencia post-eliminación Operacion
+	duracion Integer,
+	montoMoraGestion Float,
+	codigoEstrategia String, // Referencia post-eliminación Estrategia
+	nombreEstrategia String // Referencia post-eliminación Estrategia
     fechaInicio Instant,
-    fechaTermino Instant,
-    numTelefono String,
-    fechaIngresoGestion Instant
+	fechaTermino Instant,
+	numTelefono String,
+	fechaIngresoGestion Instant
 }
-
 relationship ManyToOne {
-    Gestion{deudor} to Deudor{required},
-    Gestion{moneda} to Moneda{required},
-    Gestion{estado} to Estado{required},
-    Gestion{empresaExterna} to EmpresaExterna
+	Gestion{deudor} to Deudor{required} , Gestion{moneda} to Moneda{required} , Gestion{estado} to Estado{required} , Gestion{empresaExterna} to EmpresaExterna
 }
-
 relationship OneToOne {
 	Campana{estrategia} to Estrategia
 }
-
 relationship ManyToOne {
 	Accion{moneda} to Moneda
 }
-
 relationship ManyToMany {
-	Estrategia to Accion,
-	Accion to Contacto,
-    Contacto to Respuesta
+	Estrategia to Accion , Accion to Contacto , Contacto to Respuesta
 }
-
-
 // Mantenedores
-
 entity Empresa {
-    codigo String,
-    nombre String,
-    direccion String,
-    numTelefono String,
-    numAnexo String,
-    nombreRepresentanteLegal String
+	codigo String,
+	nombre String,
+	direccion String,
+	numTelefono String,
+	numAnexo String,
+	nombreRepresentanteLegal String
+}
+entity EmpresaExterna {
+}
+entity Rubro {
+	nombre String
+}
+entity EmpresaCedente {
 }
 
-entity EmpresaExterna {}
-
-entity ZonaGeografica {
-    nombre String,
-    codigoArea String
-}
-
-entity NivelZonaGeografica {
-    codigo String,
-    nombre String,
-    correlativo Integer,
-    indCodigoArea Boolean
-}
-
-relationship OneToOne {
-    EmpresaExterna{empresa} to Empresa
-}
-
-relationship OneToMany{
-    Empresa{zonaGeografica} to ZonaGeografica,
-    ZonaGeografica{nivel} to NivelZonaGeografica
+/**
+ * The RubroAccionContactoRespuesta entity.
+ * Establece las posibles relaciones Accion - Contacto - Respuesta para los rubros dentro del sistema
+ * Las propiedades valor, contador y dias son utilizadas en el caclulo de prioridad de los teléfonos.
+ * @author Patricio Cornejo
+ */
+entity RubroAccionContactoRespuesta {
+	/** Valor incorporado al peso de un teléfono al ingresar una gestión con esta combinación */
+	valor Integer,
+	/** Indica la cantidad de gestiones dentro de los últimos {@code dias} con esta combinación para  
+	 *	que el peso del teléfono incorporado cambie a el "Valor mínimo"
+	 */
+	contador Integer,
+	/** Intervalo de días para consultar gestiones con "Valor Mínimo" */
+	dias Integer
 }
 
 relationship ManyToOne {
-    NivelZonaGeografica{nivelPadre} to NivelZonaGeografica,
-    ZonaGeografica{zonaPadre} to ZonaGeografica
+	RubroAccionContactoRespuesta to Rubro , RubroAccionContactoRespuesta to Accion , RubroAccionContactoRespuesta to Contacto , RubroAccionContactoRespuesta to Respuesta
+}
+entity ZonaGeografica {
+	nombre String,
+	codigoArea String
+}
+entity NivelZonaGeografica {
+	codigo String,
+	nombre String,
+	correlativo Integer,
+	indCodigoArea Boolean
+}
+relationship OneToOne {
+	EmpresaExterna{empresa} to Empresa , EmpresaCedente{empresa} to Empresa
+}
+relationship ManyToOne {
+	Empresa to ZonaGeografica , EmpresaCedente to Rubro , ZonaGeografica to NivelZonaGeografica , NivelZonaGeografica{nivelPadre} to NivelZonaGeografica , ZonaGeografica{zonaPadre} to ZonaGeografica
 }
 
+//Demograficos
+
+/**
+ * The TipoDireccion entity.
+ * Representa los distintos tipos de dirección que existen en el sistema (PARTICULAR, COMERCIAL)
+ * @author Patricio Cornejo
+ */
+entity TipoDireccion {
+	nombre String required
+}
+
+/**
+ * The TipoTelefono entity.
+ * Representa los distintos tipos de teléfono que existen en el sistema (PARTICULAR, COMERCIAL, CELULAR)
+ * @author Patricio Cornejo
+ */
+entity TipoTelefono {
+	nombre String required
+}
+
+/**
+ * The OrigenCarga entity.
+ * Indica el canal por el cual se cargan algunas entidades en el sistema (ej: Carga de Datos, Ingresado por usuario),
+ * cuando aplican varios canales (Ej: las operaciones solo se cargan por carga de datos, entonces no aplica).
+ * @author Patricio Cornejo
+ */
+entity OrigenCarga {
+	/** Nombre del orígen. Ej: SITREL_CS */ 
+	nombre String required,
+	/** Descripción, Ej: Dato ingresado a traves de la aplicación cliente Sitrel CS */ 
+	descripcion String
+}
+
+/**
+ * The Direccion entity
+ * Representa una dirección asociada siempre a un deudor
+ * @author Patricio Cornejo
+ */
+entity Direccion {
+	/** Glosa completa de la dirección */
+	glosa String,
+	/** Nombre de calle/avenida/etc */
+	calle String required,
+	/** Número principal del domicilio, se usa String para los casos con letras (ej: 172-B, S/N) */
+	numero String required,
+	/** Número de departamento */
+	depto String,
+	/** Número del piso */
+	piso String,
+	/** Número/Identificación del block */
+	block String,
+	/** Nombre de población/villa/sector/condominio */
+	sector String,
+	/** Codigo Postal */
+	codigoPostal String,
+	/** Fecha de ingreso al sistema */
+	fechaIngreso Instant
+}
+
+relationship ManyToOne {
+	Direccion to Deudor,
+	Direccion to TipoDireccion
+	Direccion to ZonaGeografica,
+	Direccion to EmpresaCedente,
+	Direccion to OrigenCarga
+}
+
+/**
+ * The Telefono entity
+ * Representa un teléfono asociado siempre a un deudor
+ * @author Patricio Cornejo
+ */
+entity Telefono {
+	/** Número telefónico completo */
+	numero String required,
+	/** Fecha de ingreso al sistema */
+	fechaIngreso Instant required,
+	/** Establece un ordenamiento sobre la "calidad" del telefono. Menor prioridad = Mejor telefono */
+	prioridad Integer,
+	/** Fecha de la ultima modificación del peso, generalmente la fecha de la última gestión con este teléfono */
+	fechaActualizacionPeso Instant,
+	/** Lleva la cuenta de las modificaciones del peso en base a las gestiones ingresadas con este teléfono
+	 *  Mayor Peso = Mejor Telefono = Menor Prioridad
+	 */
+	peso Integer,
+	/** Indica, si el telefono tiene el valor minimo, si este fue alcanzado por suma de gestiones validas
+	 *	o por el contador de las gestiones mínimas
+	 */
+	tipoPeso String
+}
+
+relationship ManyToOne {
+	Telefono to Deudor,
+	Telefono to TipoTelefono,
+	Telefono to EmpresaCedente,
+	Telefono to OrigenCarga
+}
 
 skipClient *
