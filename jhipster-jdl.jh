@@ -430,12 +430,12 @@ entity EmpresaCedente {
 }
 
 /**
- * The RubroAccionContactoRespuesta entity.
+ * The AccionContactoRespuesta entity.
  * Establece las posibles relaciones Accion - Contacto - Respuesta para los rubros dentro del sistema
  * Las propiedades valor, contador y dias son utilizadas en el caclulo de prioridad de los teléfonos.
  * @author Patricio Cornejo
  */
-entity RubroAccionContactoRespuesta {
+entity AccionContactoRespuesta {
 	/** Valor incorporado al peso de un teléfono al ingresar una gestión con esta combinación */
 	valor Integer,
 	/** Indica la cantidad de gestiones dentro de los últimos {@code dias} con esta combinación para  
@@ -447,7 +447,7 @@ entity RubroAccionContactoRespuesta {
 }
 
 relationship ManyToOne {
-	RubroAccionContactoRespuesta to Rubro , RubroAccionContactoRespuesta to Accion , RubroAccionContactoRespuesta to Contacto , RubroAccionContactoRespuesta to Respuesta
+	AccionContactoRespuesta to Rubro , AccionContactoRespuesta to Accion , AccionContactoRespuesta to Contacto , AccionContactoRespuesta to Respuesta
 }
 entity ZonaGeografica {
 	nombre String,
