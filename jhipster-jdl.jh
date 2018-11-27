@@ -22,11 +22,11 @@ entity Operacion {
 	/** Número identificador de la operación */
 	numOperacion String required,
 	/** Monto total de la operación */
-	montoOperacion Float,
+	montoOperacion BigDecimal,
 	/** Monto adeudado (genralmente suma de detalle) */
-	montoMora Float,
+	montoMora BigDecimal,
 	/** Saldo por cobrar (?) */
-	saldoInsoluto Float,
+	saldoInsoluto BigDecimal,
 	/** Fecha de vencimiento de la cuota más antigua morosa (o lo informado por el cedente) */
 	fechaVencimiento Instant,
 	/** Días en mora de la operación (informados por el cedente) */
@@ -52,7 +52,7 @@ entity DetalleOperacion{
 	/** Número del detalle */
 	numero Integer,
 	/** Monto del detalle */
-	montoDetalle Float,
+	montoDetalle BigDecimal,
 	/** Fecha de ingreso al sistema */
 	fechaIngreso Instant required,
 	/** Días de mora (calculados en base a fechaVencimiento) */
@@ -115,13 +115,13 @@ entity Pago {
 	/** Fecha de digitación del pago (informada por cedente) */
 	fechaPago Instant required,
 	/** Monto total pagado, relativo a la moneda */
-	montoPago Float required,
+	montoPago BigDecimal required,
 	/** Fecha de ingreso del pago al sistema */
 	fechaIngreso Instant required,
 	/** Porción del monto que corresponde a honorarios */
-	montoHonorario Float,
+	montoHonorario BigDecimal,
 	/** Porción del monto que corresponde a intereses */
-	montoInteres Float,
+	montoInteres BigDecimal,
 	/** Número de documento asociado al pago */
 	numDocumento String,
 	/** Cuota asociada al pago */
@@ -181,12 +181,12 @@ entity Estrategia {
 	/** Indica origen de la ejecución de la estrategia (ARCHIVO o FILTRO) */
 	tipoOrigen TipoOrigenEstrategia,
 	/** Porcentaje meta a gestionar */
-	meta Float,
+	meta BigDecimal,
 	ordenEjecucion Integer,
 	indEjecucion Boolean,
 	indPreasignacion Boolean,
 	indApoyo Boolean,
-	descuento Float,
+	descuento BigDecimal,
 	indArrastre Boolean,
 	indReevaluacion Boolean,
 	indAutomatica Boolean
@@ -216,12 +216,39 @@ entity Campana {
 	numOperacionesIni Integer,
 	/** Cantidad de operaciones actual en la campaña*/
 	numOperacionesActual Integer,
-	porcDescuento Float
+	porcDescuento BigDecimal
+}
+
+/**
+ * The OperacionDeudorCampana entity.
+ * Contiene la distribución de las operaciones en las distintas campañas activas en el sistema
+ * @author A true hipster
+ */
+entity OperacionDeudorCampana {
+	/** Fecha de asignación del registro al usuario o sucursal de cobranza */
+	fechaAsignacion Instant,
+	/** Contador de gestiones para esta campaña/operación utilizado por las campañas compartidas */
+	contadorAccessos Integer,
+	/** Monto en mora inicial de la operación al ingresar en la campaña */
+	montoMoraInicial BigDecimal
+	/** Saldo insoluto inicial de la operación al ingresar en la campaña */
+	saldoInsolutoInicial BigDecimal
+}
+
+relationship ManyToOne {
+	OperacionDeudorCampana to Deudor,
+	OperacionDeudorCampana to Operacion,
+	OperacionDeudorCampana to TipoDeudor,
+	OperacionDeudorCampana to Moneda,
+	OperacionDeudorCampana to Campana,
+	OperacionDeudorCampana to SucursalCobranza,
+	OperacionDeudorCampana to EmpresaExterna,
+	OperacionDeudorCampana to User
 }
 
 entity Accion {
 	nombre String,
-	montoCosto Float,
+	montoCosto BigDecimal,
 	indTelefono Boolean
 }
 entity Contacto {
@@ -242,7 +269,7 @@ entity Gestion {
 	glosa String,
 	nombreContacto String,
 	programacionLlamada Instant,
-	montoCompromiso Float,
+	montoCompromiso BigDecimal,
 	fechaCompromiso Instant,
 	idProducto String, // Referencia post-eliminación Producto
 	producto String, // Referencia post-eliminación Producto
@@ -252,12 +279,12 @@ entity Gestion {
 	contacto String,
 	idRespuesta String,
 	respuesta String,
-	montoCosto Float,
+	montoCosto BigDecimal,
 	codigoCarta String,
 	nombreCarta String,
 	numOperacion String, // Referencia post-eliminación Operacion
 	duracion Integer,
-	montoMoraGestion Float,
+	montoMoraGestion BigDecimal,
 	codigoEstrategia String, // Referencia post-eliminación Estrategia
 	nombreEstrategia String // Referencia post-eliminación Estrategia
     fechaInicio Instant,
