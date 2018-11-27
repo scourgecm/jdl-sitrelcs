@@ -162,7 +162,7 @@ relationship ManyToOne {
 	Pago{deudor} to Deudor{rut} , Pago{operacion} to Operacion{numOperacion} , Pago{moneda} to Moneda
 }
 
-// Estrategias Cobranza
+// Cobranza
 
 /**
  * The Estrategia entity.
@@ -218,8 +218,6 @@ entity Campana {
 	numOperacionesActual Integer,
 	porcDescuento Float
 }
-
-
 
 entity Accion {
 	nombre String,
@@ -279,6 +277,114 @@ relationship ManyToOne {
 relationship ManyToMany {
 	Estrategia to Accion , Accion to Contacto , Contacto to Respuesta
 }
+
+// Sucursales de cobranza
+
+/**
+ * The CentroCobranza entity.
+ * @author Patricio Cornejo
+ */
+entity CentroCobranza {
+	/** Codigo del centro de cobranza */
+	codigo String,
+	/** Nombre completo del centro */
+	nombre String required,
+	/** Direccion completa del centro */
+	direccion String,
+	/** Telefono de contacto del centro */
+	telefono String,
+	/** Email de contacto del centro */
+	email String,
+	/** Nombre del contacto del centro */
+	nombreContacto String
+}
+
+relationship ManyToOne{
+	CentroCobranza to ZonaGeografica,
+	CentroCobranza to Empresa
+}
+
+/**
+ * The SucursalCobranza entity.
+ * @author Patricio Cornejo
+ */
+entity SucursalCobranza {
+	/** Codigo de la sucursal de cobranza */
+	codigo String,
+	/** Nombre completo de la sucursal */
+	nombre String required,
+	/** Direccion completa de la sucursal */
+	direccion String,
+	/** Telefono de contacto de la sucursal */
+	telefono String,
+	/** Email de contacto de la sucursal */
+	email String,
+	/** Nombre del contacto de la sucursal */
+	nombreContacto String
+}
+
+relationship ManyToOne{
+	SucursalCobranza to CentroCobranza,
+	SucursalCobranza to ZonaGeografica,
+	SucursalCobranza to Empresa
+}
+
+/**
+ * The Distrito entity.
+ * Distrito pertenece a un centro de cobranza y agrupa varias sucursales de cobranza
+ * @author A true hipster
+ */
+entity Distrito {
+	/** Código del distito */
+	codigo String,
+	/** Nombre del distrito */
+	nombre String required
+}
+
+relationship ManyToOne {
+	Distrito to CentroCobranza
+}
+
+/**
+ * The SucursalDistrito entity.
+ * Representa una sucursal de cobranza asociada a un distrito
+ * @author A true hipster
+ */
+entity SucursalDistrito {}
+
+/**
+ * The SucursalDistrito entity.
+ * Representa una sucursal de cobranza asociada a un distrito
+ * @author A true hipster
+ */
+entity SucursalEmpresaCedente {
+	/** Codigo de la sucursal de cobranza */
+	codigo String,
+	/** Nombre completo de la sucursal */
+	nombre String required,
+	/** Direccion completa de la sucursal */
+	direccion String,
+	/** Telefono de contacto de la sucursal */
+	telefono String,
+	/** Email de contacto de la sucursal */
+	email String,
+	/** Nombre del contacto de la sucursal */
+	nombreContacto String
+}
+
+relationship ManyToOne {
+	SucursalEmpresaCedente to SucursalCobranza,
+	SucursalEmpresaCedente to ZonaGeografica,
+	SucursalEmpresaCedente to Empresa
+}
+
+relationship ManyToOne {
+	SucursalDistrito to SucursalCobranza,
+	SucursalDistrito to Distrito,
+	SucursalDistrito to SucursalEmpresaCedente
+}
+
+
 // Mantenedores
 entity Empresa {
 	codigo String,
