@@ -217,7 +217,9 @@ entity OperacionDeudor {}
  * Ej: Deudor Directo, Aval
  * @author Patricio Cornejo
  */
-entity TipoDeudor {}
+entity TipoDeudor {
+	nombre String maxlength(50)
+}
 
 // Relaciones de entidad Operacion y detalle
 relationship ManyToOne{
@@ -246,15 +248,15 @@ relationship ManyToOne {
  */
 entity Estrategia {
 	/** Código corto para la estrategia */
-	codigo String,
+	codigo String required unique maxlength(20),
 	/** Nombre de la estrategia */
-	nombre String,
+	nombre String required,
 	/** Define si es permanente o compartida */
-	tipo TipoEstrategia,
+	tipo TipoEstrategia required,
 	/** Duración de la estrategia en día */
 	duracion Integer,
 	/** Indica origen de la ejecución de la estrategia (ARCHIVO o FILTRO) */
-	tipoOrigen TipoOrigenEstrategia,
+	tipoOrigen TipoOrigenEstrategia required,
 	/** Porcentaje meta a gestionar */
 	meta BigDecimal,
 	ordenEjecucion Integer,
@@ -329,7 +331,7 @@ relationship ManyToOne {
  */
 entity Accion {
 	/** Nombre de la acción */
-	nombre String required,
+	nombre String required maxlength(50),
 	/** Costo asociado a la gestión */
 	montoCosto BigDecimal,
 	/** Indica si la acción es de tipo teléfonico, lo que obliga a indicar el telefono del deudor utilizado en la gestión */
@@ -344,7 +346,7 @@ entity Accion {
  */
 entity Contacto {
 	/** Nombre del contacto */
-	nombre String required,
+	nombre String required maxlength(50),
 	/** Indica si el contacto puede generar compromisos de pago, aunque esto tambien depende de las respuesta de la gestión */
 	indGeneraCompromiso Boolean required
 }
@@ -357,7 +359,7 @@ entity Contacto {
  */
 entity Respuesta {
 	/** Nombre de la respuesta */
-	nombre String required,
+	nombre String required maxlength(50),
 	/** Indica si la respuesta genera un compromiso de pago, esto hace que se solicite una fecha y un monto a pagar como dato adicional para la gestión */
 	indCompromisoPago Boolean,
 	/** Indica si la respuesta genera un compromiso de contacto, similar al compromiso de pago, pero solo requiere una fecha */
@@ -372,31 +374,32 @@ relationship ManyToMany {
  * The Gestion entity.
  * Representa un contacto con un deudor a traves de cualquier combinación de cobranza Accion-Contacto-Respuesta
  * Siempre esta relacionada a un usuario (ingresada a traves de app) o empresa externa (carga masiva)
+ * Los campos ID 
  * @author Patricio Cornejo
  */
 entity Gestion {
-	idOperacion String, // Referencia post-eliminación Operacion
-	idCampana String, // Referencia post-eliminación Campana
-	idUsuario String, // Referencia post-eliminación User
+	idOperacion Long, // Referencia post-eliminación Operacion
+	idCampana Long, // Referencia post-eliminación Campana
+	idUsuario Long, // Referencia post-eliminación User
 	cobrador String, // Referencia post-eliminación User
 	fechaHoraGestion Instant,
-	glosa String,
+	glosa String maxlength(1000),
 	nombreContacto String,
 	programacionLlamada Instant,
 	montoCompromiso BigDecimal,
 	fechaCompromiso Instant,
-	idProducto String, // Referencia post-eliminación Producto
+	idProducto Long, // Referencia post-eliminación Producto
 	producto String, // Referencia post-eliminación Producto
-	idAccion String, // Referencia post-eliminación Accion, Contacto, Respuesta
-	accion String,
-	idContacto String,
-	contacto String,
-	idRespuesta String,
-	respuesta String,
+	idAccion Long required, // Referencia post-eliminación Accion, Contacto, Respuesta
+	accion String required maxlength(50), // Referencia post-eliminación Accion
+	idContacto Long required, // Referencia post-eliminación Contacto
+	contacto String required maxlength(50), // Referencia post-eliminación Contacto
+	idRespuesta Long required, // Referencia post-eliminación Respuesta
+	respuesta String required maxlength(50), // Referencia post-eliminación Respuesta
 	montoCosto BigDecimal,
 	codigoCarta String,
 	nombreCarta String,
-	numOperacion String, // Referencia post-eliminación Operacion
+	numOperacion String maxlength(24), // Referencia post-eliminación Operacion
 	duracion Integer,
 	montoMoraGestion BigDecimal,
 	codigoEstrategia String, // Referencia post-eliminación Estrategia
@@ -404,16 +407,17 @@ entity Gestion {
     fechaInicio Instant,
 	fechaTermino Instant,
 	numTelefono String,
-	fechaIngresoGestion Instant
+	fechaIngresoGestion Instant required
 }
 relationship ManyToOne {
-	Gestion to Deudor{required} , Gestion to Moneda{required} , Gestion to Estado , Gestion to EmpresaExterna
+	Gestion to Deudor{required}, 
+	Gestion to Moneda{required}, 
+	Gestion to Estado, 
+	Gestion to EmpresaExterna,
+	Accion to Moneda
 }
 relationship OneToOne {
 	Campana to Estrategia
-}
-relationship ManyToOne {
-	Accion to Moneda
 }
 
 /**
@@ -424,7 +428,7 @@ relationship ManyToOne {
  */
 entity Alerta {
 	/** glosa */
-	glosa String required,
+	glosa String required maxlength(1000),
 	/** Fecha de ingreso al sistema o fecha de creación para autogeneradas */
 	fechaCreacion Instant required,
 	/** Duración de la alerta en días. Valor nulo indica que tiene una duración indefinida. */
@@ -441,17 +445,17 @@ entity Alerta {
  */
 entity CentroCobranza {
 	/** Codigo del centro de cobranza */
-	codigo String,
+	codigo String maxlength(20),
 	/** Nombre completo del centro */
-	nombre String required,
+	nombre String required maxlength(50),
 	/** Direccion completa del centro */
 	direccion String,
 	/** Telefono de contacto del centro */
-	telefono String,
+	telefono String maxlength(20),
 	/** Email de contacto del centro */
 	email String,
 	/** Nombre del contacto del centro */
-	nombreContacto String
+	nombreContacto String maxlength(50)
 }
 
 relationship ManyToOne{
@@ -465,17 +469,17 @@ relationship ManyToOne{
  */
 entity SucursalCobranza {
 	/** Codigo de la sucursal de cobranza */
-	codigo String,
+	codigo String maxlength(20),
 	/** Nombre completo de la sucursal */
-	nombre String required,
+	nombre String required maxlength(50),
 	/** Direccion completa de la sucursal */
 	direccion String,
 	/** Telefono de contacto de la sucursal */
-	telefono String,
+	telefono String maxlength(20),
 	/** Email de contacto de la sucursal */
 	email String,
 	/** Nombre del contacto de la sucursal */
-	nombreContacto String
+	nombreContacto String maxlength(50)
 }
 
 relationship ManyToOne{
@@ -491,9 +495,9 @@ relationship ManyToOne{
  */
 entity Distrito {
 	/** Código del distito */
-	codigo String,
+	codigo String maxlength(20),
 	/** Nombre del distrito */
-	nombre String required
+	nombre String required maxlength(50)
 }
 
 relationship ManyToOne {
@@ -514,17 +518,17 @@ entity SucursalDistrito {}
  */
 entity SucursalEmpresaCedente {
 	/** Codigo de la sucursal de cobranza */
-	codigo String,
+	codigo String maxlength(20),
 	/** Nombre completo de la sucursal */
-	nombre String required,
+	nombre String required maxlength(50),
 	/** Direccion completa de la sucursal */
 	direccion String,
 	/** Telefono de contacto de la sucursal */
-	telefono String,
+	telefono String maxlength(20),
 	/** Email de contacto de la sucursal */
 	email String,
 	/** Nombre del contacto de la sucursal */
-	nombreContacto String
+	nombreContacto String maxlength(50)
 }
 
 relationship ManyToOne {
@@ -542,23 +546,49 @@ relationship ManyToOne {
 
 // Mantenedores
 /**
- * The SucursalDistrito entity.
- * Representa una sucursal de cobranza asociada a un distrito
+ * The Empresa entity.
+ * Representa una empresa dentro del sistema
  * @author A true hipster
  */
 entity Empresa {
-	codigo String,
-	nombre String,
+	/** Codigo de la empresa */ 
+	codigo String maxlength(20),
+	/** Nombre de la empresa */ 
+	nombre String required maxlength(50),
+	/** Direccion completa de la empresa */
 	direccion String,
-	numTelefono String,
-	numAnexo String,
-	nombreRepresentanteLegal String
+	/** Telefono de contacto completo de la empresa */
+	telefono String maxlength(20),
+	/** Email de contacto de la empresa */
+	email String,
+	/** Nombre del contacto de la empresa */
+	nombreContacto String maxlength(50)
 }
+
+/**
+ * The EmpresaExterna entity.
+ * Extiende una empresa en una empresa de cobranza externa.
+ * Son las que realizan la cobranza pero no informan la deuda
+ * @author A true hipster
+ */
 entity EmpresaExterna {
 }
+
+/**
+ * The Rubro entity.
+ * Representa un rubro de cobranza para agrupar los diferentes arboles de gestión por rubro
+ * @author A true hipster
+ */
 entity Rubro {
-	nombre String
+	nombre String required maxlength(50)
 }
+
+/**
+ * The EmpresaCedente entity.
+ * Extiende una empresa en una empresa cedente.
+ * Son las que informan la cartera que es cargada al sistema
+ * @author A true hipster
+ */
 entity EmpresaCedente {
 }
 
@@ -582,10 +612,18 @@ entity AccionContactoRespuesta {
 relationship ManyToOne {
 	AccionContactoRespuesta to Rubro , AccionContactoRespuesta to Accion , AccionContactoRespuesta to Contacto , AccionContactoRespuesta to Respuesta
 }
+
+/**
+ * The ZonaGeografica entity.
+ * Representa una zona geografica de cualquier nivel. Además, establece la jerarquia entre las zonas
+ * a traves de una relación con la misma entidad y los distintos niveles de jerarquia.
+ * @author Patricio Cornejo
+ */
 entity ZonaGeografica {
 	nombre String,
 	codigoArea String
 }
+
 entity NivelZonaGeografica {
 	codigo String,
 	nombre String,
