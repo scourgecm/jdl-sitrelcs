@@ -1,17 +1,63 @@
 // Deuda
 /**
  * The Deudor entity.
+ * Representa los datos comunes para cualquier tipo de deudor en el sistema
  * @author Patricio Cornejo
  */
 entity Deudor {
 	/** rut */
-	rut Integer required,
+	rut Integer required unique,
 	/** Dígito verificador */
-	dv String required,
+	dv String required minlength(1) maxlength(1),
 	/** Nombre completo */
 	nombre String,
 	/** Fecha de ingreso al sistema */
 	fechaIngreso Instant required
+}
+
+/**
+ * The DeudorPersona entity.
+ * Extiende la entidad Deudor con datos relevantes a personal naturales. Consiste unicamente de datos informativos
+ * @author Patricio Cornejo
+ */
+entity DeudorPersona {
+	fechaNacimiento Instant,
+	/** Limitado a valores "M" y "F"  */
+	sexo String minlength(1) maxlength(1),
+	/** No contiene mayores validaciones de contenido */
+	estadoCivil String,
+	/** No contiene mayores validaciones de contenido */
+	nivelEducacional String,
+	/** Antiguedad laboral en años */
+	antiguedadLaboral Integer,
+	/** No contiene mayores validaciones de contenido */
+	cargo String,
+	/** No contiene mayores validaciones de contenido */
+	profesion String,
+	/** No contiene mayores validaciones de contenido */
+	empleador String
+}
+
+relationship OneToOne {
+	DeudorPersona to Deudor
+}
+
+/**
+ * The DeudorEmpresa entity.
+ * Extiende la entidad Deudor con datos relevantes a empresas. Consiste unicamente de datos informativos
+ * @author Patricio Cornejo
+ */
+entity DeudorEmpresa {
+	/** Giro */
+	giro String,
+	/** Razon Social */
+	razonSocial String,
+	/** Nombre fantasía */
+	nombreFantasia String
+}
+
+relationship OneToOne {
+	DeudorEmpresa to Deudor
 }
 
 /**
@@ -20,7 +66,7 @@ entity Deudor {
  */
 entity Operacion {
 	/** Número identificador de la operación */
-	numOperacion String required,
+	numOperacion String required maxlength(24),
 	/** Monto total de la operación */
 	montoOperacion BigDecimal,
 	/** Monto adeudado (genralmente suma de detalle) */
@@ -36,7 +82,7 @@ entity Operacion {
 	/** Fecha de ingreso al sistema */
 	fechaIngreso Instant required,
 	/** Días en mora de la operación (calculados en base a fechaVencimiento) */
-	diasMoraCalc Integer
+	diasMoraCalculado Integer
 }
 
 /**
@@ -56,7 +102,7 @@ entity DetalleOperacion{
 	/** Fecha de ingreso al sistema */
 	fechaIngreso Instant required,
 	/** Días de mora (calculados en base a fechaVencimiento) */
-	diasMoraCal Integer
+	diasMoraCalculado Integer
 }
 
 /**
@@ -66,9 +112,27 @@ entity DetalleOperacion{
  */
 entity Producto {
 	/** Código corto del producto */
-	codigo String,
+	codigo String unique maxlength(20),
 	/** Nombre completo del producto */
-	nombre String required
+	nombre String required unique maxlength(50),
+	/** Descripción */
+	descripcion String
+}
+
+/**
+ * The FamiliaProducto entity.
+ * Agrupaciones de productos, opcionales
+ * @author Patricio Cornejo
+ */
+entity FamiliaProducto {
+	/** Nombre completo del producto */
+	nombre String required maxlength(50),
+	/** Descripcion */
+	descripcion String
+}
+
+relationship ManyToOne {
+	Producto to FamiliaProducto
 }
 
 /**
@@ -79,11 +143,11 @@ entity Producto {
  */
 entity Moneda {
 	/** Nombre completo de la moneda */
-	nombre String,
+	nombre String required maxlength(50),
 	/** Codigo ISO de la moneda, si aplica (ej: CLP, USD) */
-	codigoISO String,
+	codigoISO String maxlength(5),
 	/** Símbolo de la moneda (ej: $, U.F.) */
-	signo String
+	signo String maxlength(5)
 }
 
 /**
@@ -93,14 +157,22 @@ entity Moneda {
  */
 entity Fase {
 	/** Nombre de fase */
-	nombre String,
+	nombre String required,
 	/** Indica si corresponde a fase de cobranza judicial */
-	indFaseJudicial Boolean
+	indFaseJudicial Boolean required
 }
 
+
+/**
+ * The Estado entity.
+ * Representa los estados de cobranza de las operaciones
+ * @author Patricio Cornejo
+ */
 entity Estado {
-	nombre String,
-	codigo String,
+	/** Codigo corto del estado */
+	codigo String required unique,
+	/** Nombre del estado */
+	nombre String required,
 	indRuteoManual Boolean,
 	indInhibeGestion Boolean,
 	indPermiteDiscador Boolean
@@ -123,7 +195,9 @@ entity Pago {
 	/** Porción del monto que corresponde a intereses */
 	montoInteres BigDecimal,
 	/** Número de documento asociado al pago */
-	numDocumento String,
+	numDocumento String maxlength(24),
+	/** Número de operación asociado al pago. No usa FK ya que operaciones pueden salir del sistema */
+	numOperacion String maxlength(24),
 	/** Cuota asociada al pago */
 	numCuota Integer
 }
@@ -154,12 +228,13 @@ relationship ManyToOne{
 	Operacion{producto required} to Producto , 
 	Operacion{fase} to Fase , 
 	Operacion{estado} to Estado , 
+	Operacion{estado} to OrigenCarga , 
 	DetalleOperacion{operacion required} to Operacion
 }
 
 // Relaciones de entidad Pago
 relationship ManyToOne {
-	Pago{deudor} to Deudor{rut} , Pago{operacion} to Operacion{numOperacion} , Pago{moneda} to Moneda
+	Pago to Deudor, Pago to Moneda
 }
 
 // Cobranza
@@ -246,20 +321,59 @@ relationship ManyToOne {
 	OperacionDeudorCampana to User
 }
 
+/**
+ * The Accion entity.
+ * Define los diferentes tipos de acción de cobranza relacionados a las gestiones. Cada acción se relaciona a un grupo de posibles Contactos
+ * Ej: Gestión Telefónica, Gestión Terreno
+ * @author Patricio Cornejo
+ */
 entity Accion {
-	nombre String,
+	/** Nombre de la acción */
+	nombre String required,
+	/** Costo asociado a la gestión */
 	montoCosto BigDecimal,
-	indTelefono Boolean
+	/** Indica si la acción es de tipo teléfonico, lo que obliga a indicar el telefono del deudor utilizado en la gestión */
+	indTelefono Boolean required
 }
+
+/**
+ * The Contacto entity.
+ * Define los diferentes tipos de contacto asociados a una acción de cobranza. Cada contacto se relaciona a un grupo de posibles respuestas.
+ * Ej: Contacto con deudor directo, Sin contacto
+ * @author Patricio Cornejo
+ */
 entity Contacto {
-	nombre String,
-	indGeneraCompromiso Boolean
+	/** Nombre del contacto */
+	nombre String required,
+	/** Indica si el contacto puede generar compromisos de pago, aunque esto tambien depende de las respuesta de la gestión */
+	indGeneraCompromiso Boolean required
 }
+
+/**
+ * The Respuesta entity.
+ * Define las diferentes tipos de respuesta relacionados a contactos.
+ * Ej: No se reconoce deuda, Indica fecha para regularizar
+ * @author Patricio Cornejo
+ */
 entity Respuesta {
-	nombre String,
+	/** Nombre de la respuesta */
+	nombre String required,
+	/** Indica si la respuesta genera un compromiso de pago, esto hace que se solicite una fecha y un monto a pagar como dato adicional para la gestión */
 	indCompromisoPago Boolean,
+	/** Indica si la respuesta genera un compromiso de contacto, similar al compromiso de pago, pero solo requiere una fecha */
 	indCompromisoFecha Boolean
 }
+
+relationship ManyToMany {
+	Estrategia to Accion , Accion to Contacto , Contacto to Respuesta
+}
+
+/**
+ * The Gestion entity.
+ * Representa un contacto con un deudor a traves de cualquier combinación de cobranza Accion-Contacto-Respuesta
+ * Siempre esta relacionada a un usuario (ingresada a traves de app) o empresa externa (carga masiva)
+ * @author Patricio Cornejo
+ */
 entity Gestion {
 	idOperacion String, // Referencia post-eliminación Operacion
 	idCampana String, // Referencia post-eliminación Campana
@@ -293,16 +407,30 @@ entity Gestion {
 	fechaIngresoGestion Instant
 }
 relationship ManyToOne {
-	Gestion{deudor} to Deudor{required} , Gestion{moneda} to Moneda{required} , Gestion{estado} to Estado{required} , Gestion{empresaExterna} to EmpresaExterna
+	Gestion to Deudor{required} , Gestion to Moneda{required} , Gestion to Estado , Gestion to EmpresaExterna
 }
 relationship OneToOne {
-	Campana{estrategia} to Estrategia
+	Campana to Estrategia
 }
 relationship ManyToOne {
-	Accion{moneda} to Moneda
+	Accion to Moneda
 }
-relationship ManyToMany {
-	Estrategia to Accion , Accion to Contacto , Contacto to Respuesta
+
+/**
+ * The Alerta entity.
+ * Representa una nota generica asociada a un deudor, las que se pueden cargar masivamente o generar por el sistema según la necesidad
+ * Pueden tener una duración en días y ser borradas automaticamente si es necesario.
+ * @author Patricio Cornejo
+ */
+entity Alerta {
+	/** glosa */
+	glosa String required,
+	/** Fecha de ingreso al sistema o fecha de creación para autogeneradas */
+	fechaCreacion Instant required,
+	/** Duración de la alerta en días. Valor nulo indica que tiene una duración indefinida. */
+	duracion Integer,
+	/** Fecha en la que se eliminaría la Alerta. Es autogenerada por el sistema y queda nula si la duración es nula */
+	fechaTermino Instant
 }
 
 // Sucursales de cobranza
@@ -413,6 +541,11 @@ relationship ManyToOne {
 
 
 // Mantenedores
+/**
+ * The SucursalDistrito entity.
+ * Representa una sucursal de cobranza asociada a un distrito
+ * @author A true hipster
+ */
 entity Empresa {
 	codigo String,
 	nombre String,
