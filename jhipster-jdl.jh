@@ -592,6 +592,10 @@ entity Rubro {
 entity EmpresaCedente {
 }
 
+relationship OneToOne {
+	EmpresaExterna{empresa} to Empresa , EmpresaCedente{empresa} to Empresa
+}
+
 /**
  * The AccionContactoRespuesta entity.
  * Establece las posibles relaciones Accion - Contacto - Respuesta para los rubros dentro del sistema
@@ -610,7 +614,11 @@ entity AccionContactoRespuesta {
 }
 
 relationship ManyToOne {
-	AccionContactoRespuesta to Rubro , AccionContactoRespuesta to Accion , AccionContactoRespuesta to Contacto , AccionContactoRespuesta to Respuesta
+	EmpresaCedente to Rubro, 
+	AccionContactoRespuesta to Rubro, 
+	AccionContactoRespuesta to Accion, 
+	AccionContactoRespuesta to Contacto, 
+	AccionContactoRespuesta to Respuesta
 }
 
 /**
@@ -620,21 +628,25 @@ relationship ManyToOne {
  * @author Patricio Cornejo
  */
 entity ZonaGeografica {
-	nombre String,
+	/** Nombre de la zona */
+	nombre String required maxlength(50),
+	/** Código de area */
 	codigoArea String
 }
 
+/**
+ * The NivelZonaGeografica entity.
+ * Contiene los diferentes tipos de niveles de zona geografica y establece la jerarquia entre ellos
+ * EJ: REGION -> PROVINCIA -> COMUNA
+ * @author Patricio Cornejo
+ */
 entity NivelZonaGeografica {
-	codigo String,
-	nombre String,
-	correlativo Integer,
-	indCodigoArea Boolean
+	/** Nombre del nivel */
+	nombre String required maxlength(50)
 }
-relationship OneToOne {
-	EmpresaExterna{empresa} to Empresa , EmpresaCedente{empresa} to Empresa
-}
+
 relationship ManyToOne {
-	Empresa to ZonaGeografica , EmpresaCedente to Rubro , ZonaGeografica to NivelZonaGeografica , NivelZonaGeografica{nivelPadre} to NivelZonaGeografica , ZonaGeografica{zonaPadre} to ZonaGeografica
+	Empresa to ZonaGeografica  , ZonaGeografica to NivelZonaGeografica , NivelZonaGeografica{nivelPadre} to NivelZonaGeografica , ZonaGeografica{zonaPadre} to ZonaGeografica
 }
 
 //Demograficos
@@ -645,7 +657,7 @@ relationship ManyToOne {
  * @author Patricio Cornejo
  */
 entity TipoDireccion {
-	nombre String required
+	nombre String required maxlength(50)
 }
 
 /**
@@ -654,7 +666,7 @@ entity TipoDireccion {
  * @author Patricio Cornejo
  */
 entity TipoTelefono {
-	nombre String required
+	nombre String required maxlength(50)
 }
 
 /**
@@ -665,7 +677,7 @@ entity TipoTelefono {
  */
 entity OrigenCarga {
 	/** Nombre del orígen. Ej: SITREL_CS */ 
-	nombre String required,
+	nombre String required maxlength(50),
 	/** Descripción, Ej: Dato ingresado a traves de la aplicación cliente Sitrel CS */ 
 	descripcion String
 }
@@ -677,21 +689,21 @@ entity OrigenCarga {
  */
 entity Direccion {
 	/** Glosa completa de la dirección */
-	glosa String,
+	glosa String required maxlength(400),
 	/** Nombre de calle/avenida/etc */
-	calle String required,
+	calle String required maxlength(255),
 	/** Número principal del domicilio, se usa String para los casos con letras (ej: 172-B, S/N) */
-	numero String required,
+	numero String required maxlength(10),
 	/** Número de departamento */
-	depto String,
+	depto String maxlength(10),
 	/** Número del piso */
-	piso String,
+	piso String maxlength(10),
 	/** Número/Identificación del block */
-	block String,
+	block String maxlength(10),
 	/** Nombre de población/villa/sector/condominio */
-	sector String,
+	sector String maxlength(50),
 	/** Codigo Postal */
-	codigoPostal String,
+	codigoPostal String maxlength(20),
 	/** Fecha de ingreso al sistema */
 	fechaIngreso Instant
 }
@@ -711,7 +723,7 @@ relationship ManyToOne {
  */
 entity Telefono {
 	/** Número telefónico completo */
-	numero String required,
+	numero String required maxlength(20),
 	/** Fecha de ingreso al sistema */
 	fechaIngreso Instant required,
 	/** Establece un ordenamiento sobre la "calidad" del telefono. Menor prioridad = Mejor telefono */
@@ -725,7 +737,7 @@ entity Telefono {
 	/** Indica, si el telefono tiene el valor minimo, si este fue alcanzado por suma de gestiones validas
 	 *	o por el contador de las gestiones mínimas
 	 */
-	tipoPeso String
+	tipoPeso Integer
 }
 
 relationship ManyToOne {
@@ -742,7 +754,7 @@ relationship ManyToOne {
  */
 entity Email {
 	/** Direccion de correo completa */
-	direccion String,
+	direccion String required,
 	/** Fecha de ingreso al sistema */
 	fechaIngreso Instant
 }
